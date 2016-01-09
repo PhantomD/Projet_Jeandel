@@ -9,7 +9,7 @@ import java.util.Scanner;
 
 public class Fonc {
 
-	public int multiply(int x, int y, int p) {
+	public static int multiply(int x, int y, int p) {
 		int result = 0;
 		while (y != 0) {
 			if ((y & 1) == 1)
@@ -21,7 +21,7 @@ public class Fonc {
 	}
 
 
-	public int puissance(int x, int k, int p) {
+	public static int puissance(int x, int k, int p) {
 
 		int res = 1;
 
@@ -34,20 +34,20 @@ public class Fonc {
 	}
 
 
-	public int pseudoprime(int p) {
+	public static int pseudoprime(int p) {
 
 		return puissance(2, p - 1, p);
 
 	}
 
 
-	public int nextprime() {
+	public static int nextprime() {
 
 		int rand = 2;
 
 		while (pseudoprime(rand) != 1) {
 
-			rand = (int)(Math.random() * 83886) + 2;
+			rand = (int)(Math.random() * 8388607) + 2;
 		}
 		return rand;
 
@@ -86,8 +86,7 @@ public class Fonc {
 	 * une boucle dans laquelle on prend le resultat qu'on multiplie par 256 et
 	 * auquel on ajoute le nouveau char qu'on lit. Le tout avec les modulos p.
 	 */
-	@SuppressWarnings("resource")
-	public int fingerprint(int p, String fn) {
+	public static int fingerprint(int p, String fn) {
 
 		byte[] tab = readFile(fn);
 		int res = 0;
@@ -103,31 +102,31 @@ public class Fonc {
 
 	/* n : taille fichier, fp : fingerprint */
 
-	public boolean find(int p, String fn, int fp, int n) {
-		byte[] tab = readFile(fn);
+	public boolean find(int p, String F, int fp, int sizef) {
+		
+		byte[] Fcontent = readFile(F);
 		int res = 0;
 
-		for (int i = 0; i <= n-1; i++) {
-
-			res = (BytetoUnsignedInt(tab[i]) + res * 256) % p;
-
+		for (int i = 0; i < sizef; i++) {
+			res = ( BytetoUnsignedInt(Fcontent[i]) + res * 256) % p;
 		}
 		
 		if (res == fp) {
 			return true;
 		}
 
-		for (int i = n; i <= tab.length - 1; i++) {
-			
-			res = res - multiply (BytetoUnsignedInt(tab[i - n]) , puissance(256, n -1, p),p);
-			
-			if ( res < 0 ){
+		for (int i = sizef; i < Fcontent.length ; i++) {
+		
+			res = res - multiply (BytetoUnsignedInt(Fcontent[i - sizef]) , puissance(256, sizef -1, p),p); 
+			if ( res < 0 ){//TODO: c'est chelou ce truc
 				res += p;
 			}
 			
 			res *= 256;
-			res += BytetoUnsignedInt(tab[i]);
+			res += BytetoUnsignedInt(Fcontent[i]);
 			res %= p;
+			
+		
 			
 			if (res == fp) {
 				return true;
@@ -143,25 +142,20 @@ public class Fonc {
 		return tab.length;
 	}
 
-	public static void main(String args[]) {
+	public static boolean compareFiles(String f, String F) {
 
 		Fonc fonc = new Fonc();
 		
-		System.out.println("Chemin fichier f?");
-		Scanner sc = new Scanner(System.in);
-		String arg1 = sc.nextLine();
-		System.out.println("Chemin fichier F?");
-		String arg2 = sc.nextLine();
-		System.out.println("Veuillez Patienter...");
 
-		int a = fonc.nextprime();
+		int prime = nextprime();
+		int fp = fingerprint(prime, f);
+		int sizef =  fonc.getTailleFichier(f);
+		boolean bool = fonc.find(prime, F, fp, sizef);
 		
-		int fp = fonc.fingerprint(a, arg1);
-		boolean bool = fonc.find(a, arg2, fp,fonc.getTailleFichier(arg1));
-		
-		System.out.println(fp);
-		System.out.println();
 		System.out.println(bool);
-
+		return bool;
+		
 	}
+
+
 }
